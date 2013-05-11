@@ -1,0 +1,44 @@
+* Printer Backend that wakeups OKI C-530 printers
+
+I have an OKI C-530 printer which goes into deep sleep.  Unfortunately, 
+the standard Mac OSX printer drivers, nor the OKI printer drivers on OSX 
+manage to get the printer out of deep sleep.
+
+This little C program can be used as a custom cups backed and will
+wakeup the printer before passing on the printer job to the normal
+~dnssd~ backend.
+
+** Configuration
+
+1. In the source of the ~printer-wakeup.c~ file replace all occurrences of the string
+   ~c530-e27b83~ with the similar string of your own printer.
+
+2. Build the program by invoking ~make~
+
+3. Copy the resulting ~printer-wakeup~ file to the ~/usr/libexec/cups/backends~ directory
+   under a suitabel name, e.g.
+
+   #+BEGIN_EXAMPLE
+   sudo cp printer-wakeup /usr/libexec/cups/backends/wudnssd
+   #+END_EXAMPLE
+
+4. Update your printer config file, located in ~/etc/cups/printers.conf~ by replacing 
+   the line that looks like
+
+   #+BEGIN_EXAMPLE
+   DeviceURI dnssd://OKI-C530-E27B83._pdl-datastream._tcp.local./?bidi
+   #+END_EXAMPLE
+
+   By the similar line, but with ~dnssd~ replaced by ~wudnssd~:
+   
+   #+BEGIN_EXAMPLE
+   DeviceURI wudnssd://OKI-C530-E27B83._pdl-datastream._tcp.local./?bidi
+   #+END_EXAMPLE
+
+5. Make sure that you restart the cups system, by for example doing
+
+   #+BEGIN_EXAMPLE
+   sudo launchctl stop org.cups.cupsd 
+   sudo launchctl start org.cups.cupsd 
+   #+END_EXAMPLE
+
